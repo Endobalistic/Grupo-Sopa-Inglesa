@@ -12,8 +12,9 @@ data Micro = Micro {
 
 type Instruction = Micro -> Micro
   
-addCounter (Micro m a b pc "" p) = (Micro m a b (pc+1) "" p)
-addCounter micro = micro
+addCounter micro = micro {
+  pc = pc micro + 1
+}
 
 setA valor micro = micro {
   a = valor
@@ -51,8 +52,8 @@ str addr val micro
 
 emptyMemo = (==[]).memory
 
-strProgram micro program = micro {
-  program = reverse program
+strProgram program micro = micro {
+  program = program
 }
 
 run (Micro m a b pc "" p) [] = (Micro m a b pc "" p)
@@ -63,8 +64,8 @@ runProgram (Micro m a b pc e []) = (Micro m a b pc e [])
 runProgram micro = run ((head (program micro)) micro) (tail (program micro))
 
 ifnz micro [] = micro
-ifnz (Micro m 0 b pc e i) _ = (Micro m 0 b pc e i)
-ifnz (Micro m a b pc "" i) (x:xs) = ifnz (x (Micro m a b pc "" i)) xs
+ifnz (Micro m 0 b pc e p) _ = (Micro m 0 b pc e p)
+ifnz (Micro m a b pc "" p) (x:xs) = ifnz (x (Micro m a b pc "" p)) xs
 ifnz micro _ = micro
 
 debug = filter (not.aBug)
@@ -98,7 +99,7 @@ divide :: Instruction
 lod :: Int -> Instruction  
 str :: Int -> Int -> Instruction
 emptyMemo :: Micro -> Bool
-strProgram :: Micro -> [Instruction] -> Micro
+strProgram :: [Instruction] -> Micro  -> Micro
 run :: Micro -> [Instruction] -> Micro
 runProgram :: Instruction
 ifnz :: Micro -> [Instruction] -> Micro
